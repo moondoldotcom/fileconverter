@@ -3,12 +3,11 @@ from PIL import Image
 import base64
 import os
 from pdf2image import convert_from_path
-from docx2pdf import convert as docx2pdf_convert
 from docx import Document
 
 def convert_image(file, format):
     image = Image.open(file)
-    if image.mode in ("RGBA", "P"): 
+    if image.mode in ("RGBA", "P"):
         image = image.convert("RGB")
     new_filename = file.name.split(".")[0] + "." + format
     image.save(new_filename, format)
@@ -18,7 +17,7 @@ def convert_pdf_to_images(file, format):
     images = convert_from_path(file.name)
     output_files = []
     for i, image in enumerate(images):
-        if image.mode in ("RGBA", "P"): 
+        if image.mode in ("RGBA", "P"):
             image = image.convert("RGB")
         output_file = f"{file.name.split('.')[0]}_{i+1}.{format}"
         image.save(output_file, format)
@@ -28,8 +27,10 @@ def convert_pdf_to_images(file, format):
 def convert_word_to_pdf(file):
     output_file = file.name.split(".")[0] + ".pdf"
     
-    # Use python-docx library to convert Word document to PDF
+    # Use python-docx library to open the Word document
     doc = Document(file.name)
+    
+    # Save the Word document as PDF
     doc.save(output_file)
     
     return output_file
