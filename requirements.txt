@@ -1,3 +1,4 @@
 streamlit
 pillow
-python-pptx
+pdf2image
+docx2pdf
