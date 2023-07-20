@@ -10,17 +10,17 @@ def convert_image(file, format):
     image = Image.open(file)
     if image.mode in ("RGBA", "P"): 
         image = image.convert("RGB")
-    new_filename = file.name.split(".")[0] + "." + format
+    new_filename = file.filename.split(".")[0] + "." + format
     image.save(new_filename, format)
     return new_filename
 
 def convert_pdf_to_images(file, format):
-    images = convert_from_path(file.name)
+    images = convert_from_path(file.filename)
     output_files = []
     for i, image in enumerate(images):
         if image.mode in ("RGBA", "P"): 
             image = image.convert("RGB")
-        output_file = f"{file.name.split('.')[0]}_{i+1}.{format}"
+        output_file = f"{file.filename.split('.')[0]}_{i+1}.{format}"
         image.save(output_file, format)
         output_files.append(output_file)
     return output_files
