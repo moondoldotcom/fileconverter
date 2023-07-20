@@ -3,9 +3,9 @@ from PIL import Image
 import base64
 import os
 from pdf2image import convert_from_path
-from docx2pdf import convert
-from docx.api import Document
+from docx import Document
 from reportlab.pdfgen import canvas
+import tempfile
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -28,13 +28,24 @@ def convert_pdf_to_images(file, format):
 
 def convert_word_to_pdf(file):
     output_file = file.name.split(".")[0] + ".pdf"
+    
+    # Load the Word document using python-docx
     doc = Document(file.name)
-    pdf = canvas.Canvas(output_file)
-
-    for i, paragraph in enumerate(doc.paragraphs):
-        pdf.drawString(10, 800 - i * 24, paragraph.text)
-
-    pdf.save()
+    
+    # Create a temporary file to save the PDF
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        temp_filename = temp.name
+    
+    # Convert the Word document to PDF using reportlab
+    c = canvas.Canvas(temp_filename)
+    for para in doc.paragraphs:
+        c.drawString(10, 800, para.text)
+        c.showPage()
+    c.save()
+    
+    # Rename the temporary file to the desired output file
+    os.rename(temp_filename, output_file)
+    
     return output_file
 
 def create_download_link(file):
