@@ -1,4 +1,0 @@
-streamlit
-pillow
-pdf2image
-docx2pdf
