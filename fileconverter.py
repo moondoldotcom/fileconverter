@@ -3,7 +3,8 @@ from PIL import Image
 import base64
 import os
 from pdf2image import convert_from_path
-from docx import Document
+from docx2pdf import convert as docx2pdf_convert
+from tempfile import NamedTemporaryFile
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -25,13 +26,15 @@ def convert_pdf_to_images(file, format):
     return output_files
 
 def convert_word_to_pdf(file):
-    output_file = file.name.split(".")[0] + ".pdf"
+    output_file = NamedTemporaryFile(suffix=".pdf").name
+    temp_docx_file = NamedTemporaryFile(suffix=".docx").name
 
-    # Use python-docx library to open the Word document
-    doc = Document(file.name)
-    
-    # Save the Word document as PDF
-    doc.save(output_file)
+    # Save the uploaded file to a temporary docx file
+    with open(temp_docx_file, 'wb') as f:
+        f.write(file.getvalue())
+
+    # Convert the temporary docx file to PDF
+    docx2pdf_convert(temp_docx_file, output_file)
     
     return output_file
 
