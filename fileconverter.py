@@ -3,9 +3,9 @@ from PIL import Image
 import base64
 import os
 from pdf2image import convert_from_path
-from docx import Document
-from reportlab.pdfgen import canvas
+from docx2pdf import convert as docx2pdf_convert
 import tempfile
+import win32com.client as win32
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -29,22 +29,12 @@ def convert_pdf_to_images(file, format):
 def convert_word_to_pdf(file):
     output_file = file.name.split(".")[0] + ".pdf"
     
-    # Load the Word document using python-docx
-    doc = Document(file.name)
-    
-    # Create a temporary file to save the PDF
-    with tempfile.NamedTemporaryFile(delete=False) as temp:
-        temp_filename = temp.name
-    
-    # Convert the Word document to PDF using reportlab
-    c = canvas.Canvas(temp_filename)
-    for para in doc.paragraphs:
-        c.drawString(10, 800, para.text)
-        c.showPage()
-    c.save()
-    
-    # Rename the temporary file to the desired output file
-    os.rename(temp_filename, output_file)
+    # Save the Word document as PDF using Word automation (pywin32)
+    word = win32.Dispatch('Word.Application')
+    doc = word.Documents.Open(file.name)
+    doc.SaveAs(output_file, FileFormat=17)
+    doc.Close()
+    word.Quit()
     
     return output_file
 
