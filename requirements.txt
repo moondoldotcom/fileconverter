@@ -1,5 +1,3 @@
 streamlit
 pillow
-pdf2docx
 python-pptx
-opencv-python
