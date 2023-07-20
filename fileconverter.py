@@ -4,8 +4,7 @@ import base64
 import os
 from pdf2image import convert_from_path
 from docx2pdf import convert as docx2pdf_convert
-import tempfile
-import win32com.client as win32
+from docx import Document
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -29,12 +28,9 @@ def convert_pdf_to_images(file, format):
 def convert_word_to_pdf(file):
     output_file = file.name.split(".")[0] + ".pdf"
     
-    # Save the Word document as PDF using Word automation (pywin32)
-    word = win32.Dispatch('Word.Application')
-    doc = word.Documents.Open(file.name)
-    doc.SaveAs(output_file, FileFormat=17)
-    doc.Close()
-    word.Quit()
+    # Use python-docx library to convert Word document to PDF
+    doc = Document(file.name)
+    doc.save(output_file)
     
     return output_file
 
