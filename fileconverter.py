@@ -3,7 +3,7 @@ from PIL import Image
 import base64
 import os
 from pdf2image import convert_from_path
-from pythondocx import Document
+from docx import Document
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -27,7 +27,7 @@ def convert_pdf_to_images(file, format):
 def convert_word_to_pdf(file):
     output_file = file.name.split(".")[0] + ".pdf"
 
-    # Use pythondocx library to open the Word document
+    # Use python-docx library to open the Word document
     doc = Document(file.name)
     
     # Save the Word document as PDF
