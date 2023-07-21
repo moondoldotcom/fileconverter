@@ -4,7 +4,7 @@ import base64
 import os
 from pdf2image import convert_from_path
 from tempfile import NamedTemporaryFile
-from docx2html import convert
+from docx import Document
 import asyncio
 from pyppeteer import launch
 
@@ -14,6 +14,26 @@ async def html_to_pdf(input_filename, output_filename):
     await page.goto('file://' + input_filename)
     await page.pdf({'path': output_filename, 'format': 'A4'})
     await browser.close()
+
+def convert_word_to_html(file):
+    temp_html_file = NamedTemporaryFile(suffix=".html", delete=False).name
+    document = Document(file)
+
+    # Save the Word document's text to a temporary HTML file
+    with open(temp_html_file, 'w') as f:
+        for paragraph in document.paragraphs:
+            f.write('<p>' + paragraph.text + '</p>\n')
+
+    return temp_html_file
+
+def convert_word_to_pdf(file):
+    temp_html_file = convert_word_to_html(file)
+    output_file = NamedTemporaryFile(suffix=".pdf", delete=False).name
+
+    # Convert the HTML to PDF
+    asyncio.get_event_loop().run_until_complete(html_to_pdf(temp_html_file, output_file))
+
+    return output_file
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -39,26 +59,6 @@ def convert_pdf_to_images(file, format):
     os.remove(file.name)  # Remove the temporary file
     
     return output_files
-
-def convert_word_to_pdf(file):
-    output_file = NamedTemporaryFile(suffix=".pdf", delete=False).name
-    temp_docx_file = NamedTemporaryFile(suffix=".docx", delete=False).name
-    temp_html_file = NamedTemporaryFile(suffix=".html", delete=False).name
-
-    # Save the uploaded file to a temporary docx file
-    with open(temp_docx_file, 'wb') as f:
-        f.write(file.getvalue())
-
-    # Convert the temporary docx file to HTML
-    html = convert(temp_docx_file)
-
-    with open(temp_html_file, 'w') as f:
-        f.write(html)
-
-    # Convert the HTML to PDF
-    asyncio.get_event_loop().run_until_complete(html_to_pdf(temp_html_file, output_file))
-
-    return output_file
 
 def create_download_link(file):
     with open(file, "rb") as f:
