@@ -4,8 +4,16 @@ import base64
 import os
 from pdf2image import convert_from_path
 from tempfile import NamedTemporaryFile
-from docx2txt import process as docx2txt_process
-import pypandoc
+from docx2html import convert
+import asyncio
+from pyppeteer import launch
+
+async def html_to_pdf(input_filename, output_filename):
+    browser = await launch()
+    page = await browser.newPage()
+    await page.goto('file://' + input_filename)
+    await page.pdf({'path': output_filename, 'format': 'A4'})
+    await browser.close()
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -35,16 +43,20 @@ def convert_pdf_to_images(file, format):
 def convert_word_to_pdf(file):
     output_file = NamedTemporaryFile(suffix=".pdf", delete=False).name
     temp_docx_file = NamedTemporaryFile(suffix=".docx", delete=False).name
+    temp_html_file = NamedTemporaryFile(suffix=".html", delete=False).name
 
     # Save the uploaded file to a temporary docx file
     with open(temp_docx_file, 'wb') as f:
         f.write(file.getvalue())
 
-    # Convert the temporary docx file to text
-    text = docx2txt_process(temp_docx_file)
+    # Convert the temporary docx file to HTML
+    html = convert(temp_docx_file)
 
-    # Convert the text to PDF using pypandoc
-    pypandoc.convert_text(text, 'pdf', format='md', outputfile=output_file)
+    with open(temp_html_file, 'w') as f:
+        f.write(html)
+
+    # Convert the HTML to PDF
+    asyncio.get_event_loop().run_until_complete(html_to_pdf(temp_html_file, output_file))
 
     return output_file
 
