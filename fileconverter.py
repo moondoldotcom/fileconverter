@@ -2,10 +2,10 @@ import streamlit as st
 from PIL import Image
 import base64
 import os
-import pdfkit
 from pdf2image import convert_from_path
 from tempfile import NamedTemporaryFile
-from docx import Document
+from docx2txt import process as docx2txt_process
+import pypandoc
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -40,8 +40,11 @@ def convert_word_to_pdf(file):
     with open(temp_docx_file, 'wb') as f:
         f.write(file.getvalue())
 
-    # Convert the temporary docx file to PDF using python-docx and pdfkit
-    pdfkit.from_file(temp_docx_file, output_file)
+    # Convert the temporary docx file to text
+    text = docx2txt_process(temp_docx_file)
+
+    # Convert the text to PDF using pypandoc
+    pypandoc.convert_text(text, 'pdf', format='md', outputfile=output_file)
 
     return output_file
 
