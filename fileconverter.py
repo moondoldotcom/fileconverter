@@ -2,9 +2,10 @@ import streamlit as st
 from PIL import Image
 import base64
 import os
+import pdfkit
 from pdf2image import convert_from_path
-from docx2pdf import convert as docx2pdf_convert
 from tempfile import NamedTemporaryFile
+from docx import Document
 
 def convert_image(file, format):
     image = Image.open(file)
@@ -32,16 +33,16 @@ def convert_pdf_to_images(file, format):
     return output_files
 
 def convert_word_to_pdf(file):
-    output_file = NamedTemporaryFile(suffix=".pdf").name
-    temp_docx_file = NamedTemporaryFile(suffix=".docx").name
+    output_file = NamedTemporaryFile(suffix=".pdf", delete=False).name
+    temp_docx_file = NamedTemporaryFile(suffix=".docx", delete=False).name
 
     # Save the uploaded file to a temporary docx file
     with open(temp_docx_file, 'wb') as f:
         f.write(file.getvalue())
 
-    # Convert the temporary docx file to PDF
-    docx2pdf_convert(temp_docx_file, output_file)
-    
+    # Convert the temporary docx file to PDF using python-docx and pdfkit
+    pdfkit.from_file(temp_docx_file, output_file)
+
     return output_file
 
 def create_download_link(file):
@@ -52,7 +53,7 @@ def create_download_link(file):
         return href
 
 def main():
-    st.title('Image to Image / PDF to Image / Word to PDF Converter(파일 변환기)')
+    st.title('Image to Image / PDF to Image / Word to PDF Converter')
 
     file = st.file_uploader("Upload a file", type=['jpg', 'png', 'pdf', 'docx'])
 
@@ -63,19 +64,19 @@ def main():
             if file_type in ['jpg', 'png']:
                 if file.type in ['image/jpeg', 'image/png']:
                     output_file = convert_image(file, file_type)
-                    st.success(f'File converted successfully.')
+                    st.success('File converted successfully.')
                     st.markdown(create_download_link(output_file), unsafe_allow_html=True)
                 elif file.type == 'application/pdf':
                     output_files = convert_pdf_to_images(file, file_type)
                     for output_file in output_files:
-                        st.success(f'File converted successfully.')
+                        st.success('File converted successfully.')
                         st.markdown(create_download_link(output_file), unsafe_allow_html=True)
                 else:
                     st.error('Please upload a jpg, png, or pdf file to convert to another image format.')
             elif file_type == 'pdf':
                 if file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
                     output_file = convert_word_to_pdf(file)
-                    st.success(f'File converted successfully.')
+                    st.success('File converted successfully.')
                     st.markdown(create_download_link(output_file), unsafe_allow_html=True)
                 else:
                     st.error('Please upload a docx file to convert to pdf.')
