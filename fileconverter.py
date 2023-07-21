@@ -31,7 +31,12 @@ def convert_word_to_pdf(file):
     output_file = NamedTemporaryFile(suffix=".pdf", delete=False).name
 
     # Convert the HTML to PDF
-    asyncio.get_event_loop().run_until_complete(html_to_pdf(temp_html_file, output_file))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(html_to_pdf(temp_html_file, output_file))
+    finally:
+        loop.close()
 
     return output_file
 
